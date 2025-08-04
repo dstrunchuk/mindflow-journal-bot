@@ -6,6 +6,7 @@ import logging
 from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.filters import Command
+from utils.reminder_parser import ReminderParser
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -26,10 +27,24 @@ async def handle_text_message(message: Message, database, categorizer):
         category, emoji = await categorizer.categorize(text, user_id)
         
         # Сохраняем в базу данных
-        success = await database.add_entry(user_id, text, category)
+        entry_id = await database.add_entry(user_id, text, category)
         
-        if success:
+        if entry_id:
             response = f"✅ Записано!\nКатегория: {emoji} {category}"
+            
+            # Проверяем, нужно ли создать напоминание
+            reminder_parser = ReminderParser()
+            if reminder_parser.should_create_reminder(text, category):
+                reminder_data = reminder_parser.parse_time_from_text(text)
+                if reminder_data:
+                    reminder_time, description = reminder_data
+                    success = await database.add_reminder(user_id, entry_id, text, reminder_time)
+                    if success:
+                        response += f"\n⏰ Напоминание создано: {description}"
+                        logger.info(f"Напоминание создано для пользователя {user_id} на {reminder_time}")
+                    else:
+                        response += "\n⚠️ Ошибка создания напоминания"
+            
             await message.answer(response)
             logger.info(f"Сообщение пользователя {user_id} сохранено в категорию '{category}'")
         else:

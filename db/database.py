@@ -37,23 +37,26 @@ class Database:
         try:
             await self._connection.execute(CREATE_ENTRIES_TABLE)
             await self._connection.execute(CREATE_CUSTOM_CATEGORIES_TABLE)
+            await self._connection.execute(CREATE_REMINDERS_TABLE)
             await self._connection.execute(CREATE_ENTRIES_INDEX)
+            await self._connection.execute(CREATE_REMINDERS_INDEX)
             await self._connection.commit()
             logger.info("Таблицы базы данных созданы/проверены")
         except Exception as e:
             logger.error(f"Ошибка создания таблиц: {e}")
             raise
 
-    async def add_entry(self, user_id: int, text: str, category: str) -> bool:
+    async def add_entry(self, user_id: int, text: str, category: str) -> int:
         """Добавление новой записи"""
         try:
-            await self._connection.execute(INSERT_ENTRY, (user_id, text, category))
+            cursor = await self._connection.execute(INSERT_ENTRY, (user_id, text, category))
             await self._connection.commit()
-            logger.info(f"Запись добавлена для пользователя {user_id}")
-            return True
+            entry_id = cursor.lastrowid
+            logger.info(f"Запись добавлена для пользователя {user_id}, ID: {entry_id}")
+            return entry_id
         except Exception as e:
             logger.error(f"Ошибка добавления записи: {e}")
-            return False
+            return None
 
     async def get_today_entries(self, user_id: int) -> List[Tuple[str, str, str]]:
         """Получение записей за сегодня"""
@@ -119,4 +122,47 @@ class Database:
             return categories
         except Exception as e:
             logger.error(f"Ошибка получения всех пользовательских категорий: {e}")
+            return []
+
+    async def add_reminder(self, user_id: int, entry_id: int, text: str, reminder_time: str) -> bool:
+        """Добавление напоминания"""
+        try:
+            await self._connection.execute(INSERT_REMINDER, (user_id, entry_id, text, reminder_time))
+            await self._connection.commit()
+            logger.info(f"Напоминание добавлено для пользователя {user_id} на {reminder_time}")
+            return True
+        except Exception as e:
+            logger.error(f"Ошибка добавления напоминания: {e}")
+            return False
+
+    async def get_pending_reminders(self) -> List[Tuple[int, int, str, str]]:
+        """Получение всех ожидающих напоминаний"""
+        try:
+            cursor = await self._connection.execute(GET_PENDING_REMINDERS)
+            reminders = await cursor.fetchall()
+            return reminders
+        except Exception as e:
+            logger.error(f"Ошибка получения напоминаний: {e}")
+            return []
+
+    async def mark_reminder_sent(self, reminder_id: int) -> bool:
+        """Отметить напоминание как отправленное"""
+        try:
+            await self._connection.execute(MARK_REMINDER_SENT, (reminder_id,))
+            await self._connection.commit()
+            logger.info(f"Напоминание {reminder_id} отмечено как отправленное")
+            return True
+        except Exception as e:
+            logger.error(f"Ошибка отметки напоминания: {e}")
+            return False
+
+    async def get_user_reminders(self, user_id: int) -> List[Tuple[int, str, str, bool]]:
+        """Получение напоминаний пользователя"""
+        try:
+            cursor = await self._connection.execute(GET_USER_REMINDERS, (user_id,))
+            reminders = await cursor.fetchall()
+            logger.info(f"Получено {len(reminders)} напоминаний для пользователя {user_id}")
+            return reminders
+        except Exception as e:
+            logger.error(f"Ошибка получения напоминаний пользователя: {e}")
             return [] 

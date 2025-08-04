@@ -23,6 +23,10 @@ from handlers.search import router as search_router
 from handlers.categories import router as categories_router
 from handlers.archive import router as archive_router, state_router as archive_state_router
 from handlers.add_category import router as add_category_router
+from handlers.reminders import router as reminders_router
+
+# Импорты утилит
+from utils.reminder_scheduler import ReminderScheduler
 
 # Настройка логирования
 logging.basicConfig(
@@ -46,6 +50,7 @@ async def set_commands(bot: Bot):
         BotCommand(command="categories", description="Все категории"),
         BotCommand(command="addcategory", description="Добавить свою категорию"),
         BotCommand(command="archive", description="Записи за конкретную дату"),
+        BotCommand(command="reminders", description="Мои напоминания"),
     ]
     await bot.set_my_commands(commands)
 
@@ -77,6 +82,7 @@ async def main():
         dp.include_router(archive_router)
         dp.include_router(archive_state_router)  # Роутер для состояний архива
         dp.include_router(add_category_router)
+        dp.include_router(reminders_router)
         dp.include_router(dump_router)  # Должен быть последним для обработки текста
         
         # Установка команд бота
@@ -90,6 +96,11 @@ async def main():
             return await handler(event, data)
         
         dp.message.middleware(dependency_middleware)
+        
+        # Запуск планировщика напоминаний
+        scheduler = ReminderScheduler(bot, database)
+        asyncio.create_task(scheduler.start())
+        logger.info("Планировщик напоминаний запущен")
         
         logger.info("MindFlow Journal бот запущен и готов к работе!")
         
