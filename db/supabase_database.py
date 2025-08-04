@@ -43,13 +43,22 @@ class SupabaseDatabase:
                 'datetime': datetime.now().isoformat()
             }
             
-            result = self.client.table('entries').insert(data).execute()
-            entry_id = result.data[0]['id']
+            logger.info(f"Данные для вставки: {data}")
             
-            logger.info(f"Запись добавлена для пользователя {user_id}, ID: {entry_id}")
-            return entry_id
+            result = self.client.table('entries').insert(data).execute()
+            logger.info(f"Результат запроса: {result}")
+            
+            if result.data and len(result.data) > 0:
+                entry_id = result.data[0]['id']
+                logger.info(f"Запись добавлена для пользователя {user_id}, ID: {entry_id}")
+                return entry_id
+            else:
+                logger.error("Результат запроса пустой")
+                return None
+                
         except Exception as e:
             logger.error(f"Ошибка добавления записи: {e}")
+            logger.error(f"Тип ошибки: {type(e)}")
             return None
 
     async def get_today_entries(self, user_id: int) -> List[Tuple[str, str, str]]:
