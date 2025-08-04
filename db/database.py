@@ -21,7 +21,7 @@ class Database:
             self._connection = await aiosqlite.connect(self.db_path)
             await self._connection.execute("PRAGMA foreign_keys = ON")
             await self._create_tables()
-            logger.info("База данных успешно подключена")
+            logger.info(f"База данных успешно подключена: {self.db_path}")
         except Exception as e:
             logger.error(f"Ошибка подключения к базе данных: {e}")
             raise
@@ -49,6 +49,7 @@ class Database:
     async def add_entry(self, user_id: int, text: str, category: str) -> int:
         """Добавление новой записи"""
         try:
+            logger.info(f"Попытка добавления записи: user_id={user_id}, category={category}, text_length={len(text)}")
             cursor = await self._connection.execute(INSERT_ENTRY, (user_id, text, category))
             await self._connection.commit()
             entry_id = cursor.lastrowid
@@ -61,9 +62,12 @@ class Database:
     async def get_today_entries(self, user_id: int) -> List[Tuple[str, str, str]]:
         """Получение записей за сегодня"""
         try:
+            logger.info(f"Запрос записей за сегодня для пользователя {user_id}")
             cursor = await self._connection.execute(GET_TODAY_ENTRIES, (user_id,))
             entries = await cursor.fetchall()
             logger.info(f"Получено {len(entries)} записей за сегодня для пользователя {user_id}")
+            for entry in entries:
+                logger.debug(f"Запись: {entry}")
             return entries
         except Exception as e:
             logger.error(f"Ошибка получения записей за сегодня: {e}")

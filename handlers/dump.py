@@ -19,31 +19,43 @@ async def handle_text_message(message: Message, database, categorizer):
         user_id = message.from_user.id
         text = message.text.strip()
         
+        logger.info(f"Получено текстовое сообщение от пользователя {user_id}: '{text}'")
+        
         if not text:
             await message.answer("Пожалуйста, отправьте непустое сообщение.")
             return
             
         # Категоризируем текст
         category, emoji = await categorizer.categorize(text, user_id)
+        logger.info(f"Текст категоризирован как '{category}' с эмодзи '{emoji}'")
         
         # Сохраняем в базу данных
+        logger.info(f"Попытка сохранения записи в базу данных...")
         entry_id = await database.add_entry(user_id, text, category)
+        logger.info(f"Результат сохранения записи, получен ID: {entry_id}")
         
         if entry_id:
             response = f"✅ Записано!\nКатегория: {emoji} {category}"
             
             # Проверяем, нужно ли создать напоминание
             reminder_parser = ReminderParser()
-            if reminder_parser.should_create_reminder(text, category):
+            should_create = reminder_parser.should_create_reminder(text, category)
+            logger.info(f"Проверка напоминания: категория='{category}', should_create={should_create}")
+            
+            if should_create:
                 reminder_data = reminder_parser.parse_time_from_text(text)
                 if reminder_data:
                     reminder_time, description = reminder_data
+                    logger.info(f"Создание напоминания: время='{reminder_time}', описание='{description}'")
                     success = await database.add_reminder(user_id, entry_id, text, reminder_time)
                     if success:
                         response += f"\n⏰ Напоминание создано: {description}"
                         logger.info(f"Напоминание создано для пользователя {user_id} на {reminder_time}")
                     else:
                         response += "\n⚠️ Ошибка создания напоминания"
+                        logger.error(f"Ошибка создания напоминания для пользователя {user_id}")
+                else:
+                    logger.info("Время не найдено в тексте для напоминания")
             
             await message.answer(response)
             logger.info(f"Сообщение пользователя {user_id} сохранено в категорию '{category}'")

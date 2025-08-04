@@ -140,9 +140,12 @@ class ReminderParser:
 
     def should_create_reminder(self, text: str, category: str) -> bool:
         """Определяет, нужно ли создавать напоминание"""
-        # Создаем напоминания только для задач и планов
-        if category not in ['Задачи', 'Планы']:
-            return False
+        # Проверяем наличие временных указаний в любом тексте
+        has_time = self.parse_time_from_text(text) is not None
+        
+        # Создаем напоминания для всех категорий, если есть временные указания
+        if has_time:
+            logger.info(f"Создание напоминания для категории '{category}' с временным указанием")
+            return True
             
-        # Проверяем наличие временных указаний
-        return self.parse_time_from_text(text) is not None 
+        return False 

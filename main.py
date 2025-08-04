@@ -90,12 +90,20 @@ async def main():
         logger.info("Команды бота установлены")
         
         # Внедрение зависимостей через middleware
-        async def dependency_middleware(handler, event, data):
-            data["database"] = database
-            data["categorizer"] = categorizer
-            return await handler(event, data)
+        from aiogram.fsm.middleware import BaseMiddleware
         
-        dp.message.middleware(dependency_middleware)
+        class DependencyMiddleware(BaseMiddleware):
+            def __init__(self, database, categorizer):
+                super().__init__()
+                self.database = database
+                self.categorizer = categorizer
+            
+            async def __call__(self, handler, event, data):
+                data["database"] = self.database
+                data["categorizer"] = self.categorizer
+                return await handler(event, data)
+        
+        dp.message.middleware(DependencyMiddleware(database, categorizer))
         
         # Запуск планировщика напоминаний
         scheduler = ReminderScheduler(bot, database)
