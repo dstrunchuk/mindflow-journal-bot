@@ -41,11 +41,11 @@ async def set_commands(bot: Bot):
     """Установка команд бота"""
     commands = [
         BotCommand(command="start", description="Запустить бота"),
-        BotCommand(command="сегодня", description="Записи за сегодня"),
-        BotCommand(command="поиск", description="Поиск по записям"),
-        BotCommand(command="категории", description="Все категории"),
-        BotCommand(command="добавитькатегорию", description="Добавить свою категорию"),
-        BotCommand(command="архив", description="Записи за конкретную дату"),
+        BotCommand(command="today", description="Записи за сегодня"),
+        BotCommand(command="search", description="Поиск по записям"),
+        BotCommand(command="categories", description="Все категории"),
+        BotCommand(command="addcategory", description="Добавить свою категорию"),
+        BotCommand(command="archive", description="Записи за конкретную дату"),
     ]
     await bot.set_my_commands(commands)
 

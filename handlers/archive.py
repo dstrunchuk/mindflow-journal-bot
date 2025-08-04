@@ -17,9 +17,9 @@ router = Router()
 user_states = {}
 
 
-@router.message(Command("архив"))
+@router.message(Command("archive"))
 async def cmd_archive(message: Message):
-    """Обработчик команды /архив - запрос даты"""
+    """Обработчик команды /archive - запрос даты"""
     try:
         user_id = message.from_user.id
         user_states[user_id] = "waiting_date"

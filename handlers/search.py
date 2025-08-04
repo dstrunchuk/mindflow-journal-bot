@@ -12,19 +12,19 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 
-@router.message(Command("поиск"))
+@router.message(Command("search"))
 async def cmd_search(message: Message, database):
-    """Обработчик команды /поиск - поиск записей по ключевому слову"""
+    """Обработчик команды /search - поиск записей по ключевому слову"""
     try:
         user_id = message.from_user.id
         text = message.text.strip()
         
         # Извлекаем поисковый запрос
-        if text.startswith('/поиск'):
-            search_term = text[7:].strip()  # Убираем '/поиск ' из начала
+        if text.startswith('/search'):
+            search_term = text[8:].strip()  # Убираем '/search ' из начала
             
         if not search_term:
-            await message.answer("🔍 Использование: /поиск <слово>\n\nПример: /поиск проект")
+            await message.answer("🔍 Использование: /search <слово>\n\nПример: /search проект")
             return
             
         # Ищем записи

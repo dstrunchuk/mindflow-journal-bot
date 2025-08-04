@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 
-@router.message(Command("сегодня"))
+@router.message(Command("today"))
 async def cmd_today(message: Message, database):
-    """Обработчик команды /сегодня - показать записи за сегодня"""
+    """Обработчик команды /today - показать записи за сегодня"""
     try:
         user_id = message.from_user.id
         entries = await database.get_today_entries(user_id)
