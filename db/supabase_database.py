@@ -19,10 +19,16 @@ class SupabaseDatabase:
     async def connect(self):
         """Создание соединения с Supabase"""
         try:
+            logger.info(f"Попытка подключения к Supabase: {self.supabase_url}")
             self.client = create_client(self.supabase_url, self.supabase_key)
+            
+            # Тестируем подключение
+            test_result = self.client.table('entries').select('count', count='exact').limit(1).execute()
             logger.info("Supabase клиент успешно подключен")
         except Exception as e:
             logger.error(f"Ошибка подключения к Supabase: {e}")
+            logger.error(f"URL: {self.supabase_url}")
+            logger.error(f"Key length: {len(self.supabase_key) if self.supabase_key else 0}")
             raise
 
     async def disconnect(self):
