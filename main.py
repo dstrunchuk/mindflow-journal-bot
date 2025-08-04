@@ -67,12 +67,12 @@ async def main():
         dp = Dispatcher(storage=storage)
         
         # Инициализация базы данных
-        if config.DATABASE_URL:
+        if config.DATABASE_URL and config.DATABASE_URL.strip():
             database = PostgresDatabase(config.DATABASE_URL)
             logger.info("Используется PostgreSQL база данных")
         else:
             database = Database(config.DATABASE_PATH)
-            logger.info("Используется SQLite база данных")
+            logger.info("Используется SQLite база данных (DATABASE_URL не настроен)")
         
         await database.connect()
         logger.info("База данных подключена")
