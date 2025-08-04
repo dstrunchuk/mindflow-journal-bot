@@ -14,6 +14,7 @@ from aiogram.utils.i18n import I18nMiddleware
 import config
 from db.database import Database
 from db.postgres_database import PostgresDatabase
+from db.supabase_database import SupabaseDatabase
 from utils.categorizer import Categorizer
 
 # Импорты обработчиков
@@ -67,12 +68,15 @@ async def main():
         dp = Dispatcher(storage=storage)
         
         # Инициализация базы данных
-        if config.DATABASE_URL and config.DATABASE_URL.strip():
+        if config.SUPABASE_KEY and config.SUPABASE_KEY.strip():
+            database = SupabaseDatabase(config.SUPABASE_URL, config.SUPABASE_KEY)
+            logger.info("Используется Supabase API")
+        elif config.DATABASE_URL and config.DATABASE_URL.strip():
             database = PostgresDatabase(config.DATABASE_URL)
             logger.info("Используется PostgreSQL база данных")
         else:
             database = Database(config.DATABASE_PATH)
-            logger.info("Используется SQLite база данных (DATABASE_URL не настроен)")
+            logger.info("Используется SQLite база данных (fallback)")
         
         await database.connect()
         logger.info("База данных подключена")
