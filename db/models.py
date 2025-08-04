@@ -9,9 +9,12 @@ CREATE TABLE IF NOT EXISTS entries (
     user_id INTEGER NOT NULL,
     text TEXT NOT NULL,
     datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    category TEXT NOT NULL,
-    INDEX(user_id, datetime)
+    category TEXT NOT NULL
 )
+"""
+
+CREATE_ENTRIES_INDEX = """
+CREATE INDEX IF NOT EXISTS idx_entries_user_datetime ON entries(user_id, datetime)
 """
 
 CREATE_CUSTOM_CATEGORIES_TABLE = """

@@ -37,6 +37,7 @@ class Database:
         try:
             await self._connection.execute(CREATE_ENTRIES_TABLE)
             await self._connection.execute(CREATE_CUSTOM_CATEGORIES_TABLE)
+            await self._connection.execute(CREATE_ENTRIES_INDEX)
             await self._connection.commit()
             logger.info("Таблицы базы данных созданы/проверены")
         except Exception as e:
