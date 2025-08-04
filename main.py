@@ -13,6 +13,7 @@ from aiogram.utils.i18n import I18nMiddleware
 # Импорты конфигурации и компонентов
 import config
 from db.database import Database
+from db.postgres_database import PostgresDatabase
 from utils.categorizer import Categorizer
 
 # Импорты обработчиков
@@ -66,7 +67,13 @@ async def main():
         dp = Dispatcher(storage=storage)
         
         # Инициализация базы данных
-        database = Database(config.DATABASE_PATH)
+        if config.DATABASE_URL:
+            database = PostgresDatabase(config.DATABASE_URL)
+            logger.info("Используется PostgreSQL база данных")
+        else:
+            database = Database(config.DATABASE_PATH)
+            logger.info("Используется SQLite база данных")
+        
         await database.connect()
         logger.info("База данных подключена")
         
