@@ -9,6 +9,8 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand
 from aiogram.utils.i18n import I18nMiddleware
+from aiogram.filters import F
+from aiogram.types import Message
 
 # Импорты конфигурации и компонентов
 import config
@@ -135,6 +137,15 @@ async def main():
         dp.include_router(dump_router)  # Должен быть последним для обработки текста
         logger.info("dump_router зарегистрирован")
         logger.info(f"Всего обработчиков в диспетчере: {len(dp.message.handlers)}")
+        
+        # Добавляем обработчик прямо в диспетчер для отладки
+        @dp.message(F.text & ~F.text.startswith('/'))
+        async def debug_text_handler(message: Message, database, categorizer):
+            logger.info(f"=== ОТЛАДОЧНЫЙ ОБРАБОТЧИК СРАБОТАЛ ===")
+            logger.info(f"Текст: '{message.text}'")
+            await message.answer(f"Отладочный ответ: {message.text}")
+        
+        logger.info("Отладочный обработчик добавлен")
         
         # Установка команд бота
         await set_commands(bot)
