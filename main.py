@@ -85,6 +85,30 @@ async def main():
         categorizer = Categorizer(database)
         logger.info("Категоризатор инициализирован")
         
+        # Внедрение зависимостей через middleware
+        from aiogram.fsm.middleware import BaseMiddleware
+        
+        class DependencyMiddleware(BaseMiddleware):
+            def __init__(self, database, categorizer):
+                super().__init__()
+                self.database = database
+                self.categorizer = categorizer
+            
+            async def __call__(self, handler, event, data):
+                logger.info(f"=== MIDDLEWARE СРАБОТАЛ ===")
+                logger.info(f"Тип события: {type(event)}")
+                if hasattr(event, 'text'):
+                    logger.info(f"Текст события: '{event.text}'")
+                data["database"] = self.database
+                data["categorizer"] = self.categorizer
+                logger.info("Зависимости добавлены в data")
+                return await handler(event, data)
+        
+        # Применяем middleware ко всем роутерам
+        middleware = DependencyMiddleware(database, categorizer)
+        dp.message.middleware(middleware)
+        dp.callback_query.middleware(middleware)
+        
         # Регистрация роутеров
         dp.include_router(start_router)
         dp.include_router(today_router)
@@ -99,25 +123,6 @@ async def main():
         # Установка команд бота
         await set_commands(bot)
         logger.info("Команды бота установлены")
-        
-        # Внедрение зависимостей через middleware
-        from aiogram.fsm.middleware import BaseMiddleware
-        
-        class DependencyMiddleware(BaseMiddleware):
-            def __init__(self, database, categorizer):
-                super().__init__()
-                self.database = database
-                self.categorizer = categorizer
-            
-            async def __call__(self, handler, event, data):
-                data["database"] = self.database
-                data["categorizer"] = self.categorizer
-                return await handler(event, data)
-        
-        # Применяем middleware ко всем роутерам
-        middleware = DependencyMiddleware(database, categorizer)
-        dp.message.middleware(middleware)
-        dp.callback_query.middleware(middleware)
         
         # Запуск планировщика напоминаний
         scheduler = ReminderScheduler(bot, database)
