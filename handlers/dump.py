@@ -12,10 +12,34 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 
+@router.message()
+async def handle_all_messages(message: Message):
+    """Обработчик всех сообщений для отладки"""
+    logger.info(f"=== ПОЛУЧЕНО СООБЩЕНИЕ ===")
+    logger.info(f"Тип: {message.content_type}")
+    logger.info(f"Текст: '{message.text}'")
+    logger.info(f"От пользователя: {message.from_user.id}")
+    
+    # Если это команда, не обрабатываем
+    if message.text and message.text.startswith('/'):
+        logger.info("Это команда, пропускаем")
+        return
+    
+    # Если это не текст, отвечаем
+    if message.content_type != "text":
+        await message.answer("Пожалуйста, отправьте текстовое сообщение.")
+        return
+
+
 @router.message(F.text & ~F.text.startswith('/'))
 async def handle_text_message(message: Message, database, categorizer):
     """Обработчик текстовых сообщений - сохранение мыслей"""
     try:
+        logger.info(f"=== ОБРАБОТЧИК ТЕКСТОВЫХ СООБЩЕНИЙ АКТИВИРОВАН ===")
+        logger.info(f"Тип сообщения: {message.content_type}")
+        logger.info(f"Текст сообщения: '{message.text}'")
+        logger.info(f"Начинается с '/': {message.text.startswith('/') if message.text else 'None'}")
+        
         user_id = message.from_user.id
         text = message.text.strip()
         
@@ -65,4 +89,5 @@ async def handle_text_message(message: Message, database, categorizer):
             
     except Exception as e:
         logger.error(f"Ошибка в обработчике текстовых сообщений: {e}")
+        logger.error(f"Тип ошибки: {type(e)}")
         await message.answer("Произошла ошибка. Попробуйте позже.") 

@@ -114,7 +114,10 @@ async def main():
                 data["categorizer"] = self.categorizer
                 return await handler(event, data)
         
-        dp.message.middleware(DependencyMiddleware(database, categorizer))
+        # Применяем middleware ко всем роутерам
+        middleware = DependencyMiddleware(database, categorizer)
+        dp.message.middleware(middleware)
+        dp.callback_query.middleware(middleware)
         
         # Запуск планировщика напоминаний
         scheduler = ReminderScheduler(bot, database)
