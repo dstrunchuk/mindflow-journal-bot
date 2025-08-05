@@ -68,6 +68,11 @@ async def main():
         dp = Dispatcher(storage=storage)
         
         # Инициализация базы данных
+        logger.info(f"Проверка настроек базы данных:")
+        logger.info(f"SUPABASE_KEY: {'Есть' if config.SUPABASE_KEY and config.SUPABASE_KEY.strip() else 'Нет'}")
+        logger.info(f"DATABASE_URL: {'Есть' if config.DATABASE_URL and config.DATABASE_URL.strip() else 'Нет'}")
+        logger.info(f"DATABASE_PATH: {config.DATABASE_PATH}")
+        
         if config.SUPABASE_KEY and config.SUPABASE_KEY.strip():
             database = SupabaseDatabase(config.SUPABASE_URL, config.SUPABASE_KEY)
             logger.info("Используется Supabase API")
@@ -110,15 +115,26 @@ async def main():
         dp.callback_query.middleware(middleware)
         
         # Регистрация роутеров
+        logger.info("=== РЕГИСТРАЦИЯ РОУТЕРОВ ===")
         dp.include_router(start_router)
+        logger.info("start_router зарегистрирован")
         dp.include_router(today_router)
+        logger.info("today_router зарегистрирован")
         dp.include_router(search_router)
+        logger.info("search_router зарегистрирован")
         dp.include_router(categories_router)
+        logger.info("categories_router зарегистрирован")
         dp.include_router(archive_router)
+        logger.info("archive_router зарегистрирован")
         dp.include_router(archive_state_router)  # Роутер для состояний архива
+        logger.info("archive_state_router зарегистрирован")
         dp.include_router(add_category_router)
+        logger.info("add_category_router зарегистрирован")
         dp.include_router(reminders_router)
+        logger.info("reminders_router зарегистрирован")
         dp.include_router(dump_router)  # Должен быть последним для обработки текста
+        logger.info("dump_router зарегистрирован")
+        logger.info(f"Всего обработчиков в диспетчере: {len(dp.message.handlers)}")
         
         # Установка команд бота
         await set_commands(bot)

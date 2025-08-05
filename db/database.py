@@ -49,14 +49,19 @@ class Database:
     async def add_entry(self, user_id: int, text: str, category: str) -> int:
         """Добавление новой записи"""
         try:
-            logger.info(f"Попытка добавления записи: user_id={user_id}, category={category}, text_length={len(text)}")
+            logger.info(f"=== ДОБАВЛЕНИЕ ЗАПИСИ В БАЗУ ДАННЫХ ===")
+            logger.info(f"user_id={user_id}, category={category}, text_length={len(text)}")
+            logger.info(f"text='{text[:100]}...' if len(text) > 100 else text")
+            logger.info(f"Соединение с БД: {'Есть' if self._connection else 'Нет'}")
+            
             cursor = await self._connection.execute(INSERT_ENTRY, (user_id, text, category))
             await self._connection.commit()
             entry_id = cursor.lastrowid
-            logger.info(f"Запись добавлена для пользователя {user_id}, ID: {entry_id}")
+            logger.info(f"✅ Запись добавлена для пользователя {user_id}, ID: {entry_id}")
             return entry_id
         except Exception as e:
-            logger.error(f"Ошибка добавления записи: {e}")
+            logger.error(f"❌ Ошибка добавления записи: {e}")
+            logger.error(f"Тип ошибки: {type(e)}")
             return None
 
     async def get_today_entries(self, user_id: int) -> List[Tuple[str, str, str]]:

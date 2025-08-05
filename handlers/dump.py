@@ -11,6 +11,10 @@ from utils.reminder_parser import ReminderParser
 logger = logging.getLogger(__name__)
 router = Router()
 
+logger.info("=== РОУТЕР DUMP ЗАГРУЖЕН ===")
+logger.info(f"Роутер: {router}")
+logger.info(f"Обработчики в роутере: {len(router.message.handlers)}")
+
 
 @router.message()
 async def handle_all_messages(message: Message):
