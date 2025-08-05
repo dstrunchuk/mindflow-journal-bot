@@ -5,12 +5,10 @@ MindFlow Journal - Telegram бот для ведения дневника мыс
 import asyncio
 import logging
 import sys
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, F
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.types import BotCommand
+from aiogram.types import BotCommand, Message
 from aiogram.utils.i18n import I18nMiddleware
-from aiogram.filters import F
-from aiogram.types import Message
 
 # Импорты конфигурации и компонентов
 import config
