@@ -26,6 +26,10 @@ TIME_PATTERNS = [
     (r'(\d{1,2})\s+(января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)', 'date'),
     # "23 августа день рождения", "15 сентября встреча"
     (r'(\d{1,2})\s+(января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)\s+(.*)', 'date_with_event'),
+    # "23.08", "15.09" и т.д.
+    (r'(\d{1,2})\.(\d{1,2})', 'date_dot'),
+    # "23.08 день рождения", "15.09 встреча"
+    (r'(\d{1,2})\.(\d{1,2})\s+(.*)', 'date_dot_with_event'),
 ]
 
 
@@ -138,6 +142,25 @@ class ReminderParser:
             if reminder_time <= now:
                 reminder_time = datetime(now.year + 1, month, day, 0, 0, 0)
                 
+        elif pattern_type == 'date_dot':
+            day = int(match.group(1))
+            month = int(match.group(2))
+            reminder_time = datetime(now.year, month, day, 0, 0, 0)
+            
+            # Если дата уже прошла в текущем году, переносим на следующий год
+            if reminder_time <= now:
+                reminder_time = datetime(now.year + 1, month, day, 0, 0, 0)
+                
+        elif pattern_type == 'date_dot_with_event':
+            day = int(match.group(1))
+            month = int(match.group(2))
+            event_name = match.group(3)
+            reminder_time = datetime(now.year, month, day, 0, 0, 0)
+            
+            # Если дата уже прошла в текущем году, переносим на следующий год
+            if reminder_time <= now:
+                reminder_time = datetime(now.year + 1, month, day, 0, 0, 0)
+                
         else:
             return None
             
@@ -177,6 +200,15 @@ class ReminderParser:
             month_name = match.group(2)
             event_name = match.group(3)
             return f"{day} {month_name} {event_name}"
+        elif pattern_type == 'date_dot':
+            day = match.group(1)
+            month = match.group(2)
+            return f"{day}.{month}"
+        elif pattern_type == 'date_dot_with_event':
+            day = match.group(1)
+            month = match.group(2)
+            event_name = match.group(3)
+            return f"{day}.{month} {event_name}"
         else:
             return "напоминание"
 
