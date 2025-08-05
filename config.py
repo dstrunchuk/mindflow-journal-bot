@@ -12,11 +12,11 @@ if not BOT_TOKEN:
 
 # Настройки Supabase
 SUPABASE_URL = "https://kdwiyhxjnucgpwbzcvz.supabase.co"
-SUPABASE_KEY = os.getenv('SUPABASE_KEY')  # Читаем из переменных окружения
+SUPABASE_KEY = None  # Временно отключаем Supabase из-за проблем с DNS
 
 # Настройки базы данных
-DATABASE_URL = os.getenv('DATABASE_URL')  # Читаем из переменных окружения
-DATABASE_PATH = "mindflow.db"  # Используем SQLite как fallback
+DATABASE_URL = None  # Не используем PostgreSQL connection string
+DATABASE_PATH = "mindflow.db"  # Используем SQLite
 
 # Настройки логирования
 LOG_LEVEL = "INFO"
