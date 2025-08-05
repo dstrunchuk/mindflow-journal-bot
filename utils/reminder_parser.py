@@ -22,6 +22,10 @@ TIME_PATTERNS = [
     (r'через\s+(час|(\d+)\s+часа?)', 'relative_hours'),
     # "через полчаса", "через 30 минут"
     (r'через\s+(полчаса|30\s+минут)', 'half_hour'),
+    # "23 августа", "15 сентября" и т.д.
+    (r'(\d{1,2})\s+(января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)', 'date'),
+    # "23 августа день рождения", "15 сентября встреча"
+    (r'(\d{1,2})\s+(января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)\s+(.*)', 'date_with_event'),
 ]
 
 
@@ -105,6 +109,35 @@ class ReminderParser:
         elif pattern_type == 'half_hour':
             reminder_time = now + timedelta(minutes=30)
             
+        elif pattern_type == 'date':
+            day = int(match.group(1))
+            month_name = match.group(2)
+            month_dict = {
+                'января': 1, 'февраля': 2, 'марта': 3, 'апреля': 4, 'мая': 5, 'июня': 6,
+                'июля': 7, 'августа': 8, 'сентября': 9, 'октября': 10, 'ноября': 11, 'декабря': 12
+            }
+            month = month_dict[month_name]
+            reminder_time = datetime(now.year, month, day, 0, 0, 0)
+            
+            # Если дата уже прошла в текущем году, переносим на следующий год
+            if reminder_time <= now:
+                reminder_time = datetime(now.year + 1, month, day, 0, 0, 0)
+                
+        elif pattern_type == 'date_with_event':
+            day = int(match.group(1))
+            month_name = match.group(2)
+            month_dict = {
+                'января': 1, 'февраля': 2, 'марта': 3, 'апреля': 4, 'мая': 5, 'июня': 6,
+                'июля': 7, 'августа': 8, 'сентября': 9, 'октября': 10, 'ноября': 11, 'декабря': 12
+            }
+            month = month_dict[month_name]
+            event_name = match.group(3)
+            reminder_time = datetime(now.year, month, day, 0, 0, 0)
+            
+            # Если дата уже прошла в текущем году, переносим на следующий год
+            if reminder_time <= now:
+                reminder_time = datetime(now.year + 1, month, day, 0, 0, 0)
+                
         else:
             return None
             
@@ -135,6 +168,15 @@ class ReminderParser:
                 return f"через {amount} часа"
         elif pattern_type == 'half_hour':
             return "через полчаса"
+        elif pattern_type == 'date':
+            day = match.group(1)
+            month_name = match.group(2)
+            return f"{day} {month_name}"
+        elif pattern_type == 'date_with_event':
+            day = match.group(1)
+            month_name = match.group(2)
+            event_name = match.group(3)
+            return f"{day} {month_name} {event_name}"
         else:
             return "напоминание"
 
