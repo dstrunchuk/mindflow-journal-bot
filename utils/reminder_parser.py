@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 # Паттерны для поиска времени
 TIME_PATTERNS = [
-    # "через X минут/часов/дней"
-    (r'через\s+(\d+)\s+(минут|минуты|час|часа|часов|день|дня|дней)', 'relative'),
+    # "через X минут/минуту/часов/час/дней/день"
+    (r'через\s+(\d+)\s+(минут|минуты|минуту|час|часа|часов|день|дня|дней)', 'relative'),
     # "в X:XX" или "в X часов"
     (r'в\s+(\d{1,2}):(\d{2})', 'time'),
     (r'в\s+(\d{1,2})\s+(час|часа|часов)', 'time_hours'),
@@ -75,7 +75,7 @@ class ReminderParser:
             amount = int(match.group(1))
             unit = match.group(2)
             
-            if unit in ['минут', 'минуты']:
+            if unit in ['минут', 'минуты', 'минуту']:
                 reminder_time = now + timedelta(minutes=amount)
             elif unit in ['час', 'часа', 'часов']:
                 reminder_time = now + timedelta(hours=amount)
