@@ -50,10 +50,11 @@ class ReminderParser:
         text_lower = text.lower()
         logger.info(f"parse_time_from_text: анализирую текст '{text_lower}'")
         
-        for pattern, pattern_type in self.patterns:
+        for i, (pattern, pattern_type) in enumerate(self.patterns):
+            logger.info(f"Проверяю паттерн {i+1}: {pattern_type} = '{pattern}'")
             match = re.search(pattern, text_lower)
             if match:
-                logger.info(f"Найден паттерн: {pattern_type}, match: {match.groups()}")
+                logger.info(f"✅ Найден паттерн: {pattern_type}, match: {match.groups()}")
                 try:
                     reminder_time = self._calculate_time(match, pattern_type)
                     if reminder_time:
@@ -63,6 +64,8 @@ class ReminderParser:
                 except Exception as e:
                     logger.error(f"Ошибка парсинга времени: {e}")
                     continue
+            else:
+                logger.info(f"❌ Паттерн {pattern_type} не найден")
         
         logger.info(f"Время не найдено в тексте '{text_lower}'")
         return None
