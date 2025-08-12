@@ -48,19 +48,23 @@ class ReminderParser:
             Tuple[str, str]: (время_напоминания, описание) или None
         """
         text_lower = text.lower()
+        logger.info(f"parse_time_from_text: анализирую текст '{text_lower}'")
         
         for pattern, pattern_type in self.patterns:
             match = re.search(pattern, text_lower)
             if match:
+                logger.info(f"Найден паттерн: {pattern_type}, match: {match.groups()}")
                 try:
                     reminder_time = self._calculate_time(match, pattern_type)
                     if reminder_time:
                         description = self._create_description(match, pattern_type)
+                        logger.info(f"Успешно извлечено время: {reminder_time}, описание: {description}")
                         return reminder_time, description
                 except Exception as e:
                     logger.error(f"Ошибка парсинга времени: {e}")
                     continue
         
+        logger.info(f"Время не найдено в тексте '{text_lower}'")
         return None
 
     def _calculate_time(self, match, pattern_type: str) -> Optional[str]:
@@ -217,9 +221,13 @@ class ReminderParser:
         # Проверяем наличие временных указаний в любом тексте
         has_time = self.parse_time_from_text(text) is not None
         
+        logger.info(f"should_create_reminder: text='{text}', category='{category}'")
+        logger.info(f"parse_time_from_text результат: {has_time}")
+        
         # Создаем напоминания для всех категорий, если есть временные указания
         if has_time:
             logger.info(f"Создание напоминания для категории '{category}' с временным указанием")
             return True
             
+        logger.info(f"Напоминание НЕ создается для категории '{category}' - нет временного указания")
         return False 
