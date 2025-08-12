@@ -11,8 +11,10 @@ logger = logging.getLogger(__name__)
 
 # Паттерны для поиска времени
 TIME_PATTERNS = [
-    # "через X минут/минуту/часов/час/дней/день"
-    (r'через\s+(\d+)\s+(минут|минуты|минуту|час|часа|часов|день|дня|дней)', 'relative'),
+    # "через X минут/минуту/минуты/часов/час/дней/день" - все падежи
+    (r'через\s+(\d+)\s+(минут|минуту|минуты|час|часа|часов|день|дня|дней)', 'relative'),
+    # "через минуту/минуты/час/день" - без цифры
+    (r'через\s+(минут|минуту|минуты|час|часа|часов|день|дня|дней)', 'relative_single'),
     # "в X:XX" или "в X часов"
     (r'в\s+(\d{1,2}):(\d{2})', 'time'),
     (r'в\s+(\d{1,2})\s+(час|часа|часов)', 'time_hours'),
@@ -84,6 +86,18 @@ class ReminderParser:
                 reminder_time = now + timedelta(hours=amount)
             elif unit in ['день', 'дня', 'дней']:
                 reminder_time = now + timedelta(days=amount)
+            else:
+                return None
+                
+        elif pattern_type == 'relative_single':
+            unit = match.group(1)
+            
+            if unit in ['минут', 'минуту', 'минуты']:
+                reminder_time = now + timedelta(minutes=1)
+            elif unit in ['час', 'часа', 'часов']:
+                reminder_time = now + timedelta(hours=1)
+            elif unit in ['день', 'дня', 'дней']:
+                reminder_time = now + timedelta(days=1)
             else:
                 return None
                 
@@ -179,6 +193,16 @@ class ReminderParser:
             amount = match.group(1)
             unit = match.group(2)
             return f"через {amount} {unit}"
+        elif pattern_type == 'relative_single':
+            unit = match.group(1)
+            if unit in ['минут', 'минуту', 'минуты']:
+                return "через минуту"
+            elif unit in ['час', 'часа', 'часов']:
+                return "через час"
+            elif unit in ['день', 'дня', 'дней']:
+                return "через день"
+            else:
+                return "через время"
         elif pattern_type == 'time':
             hour = match.group(1)
             minute = match.group(2)
